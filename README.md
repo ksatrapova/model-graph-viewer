@@ -14,7 +14,7 @@ Developed with the help of Claude Code (setup in `.claude/`). I wrote or reviewe
 
 Requirements:
 
-- Python 3.10 or newer
+- Python 3.10 or newer. `uv sync` uses the version pinned in `.python-version` (3.13) and downloads it automatically if it is not installed. To use another installed version instead, pass it explicitly, e.g. `uv sync --python 3.11`.
 - [uv](https://docs.astral.sh/uv/) for dependencies and the virtual environment
 - [Graphviz](https://graphviz.org/download/) installed as a system program. The Python `graphviz` package only calls the `dot` binary, so `dot` must be on `PATH`:
   - Windows: `winget install Graphviz.Graphviz`, then add `C:\Program Files\Graphviz\bin` to `PATH` if the installer did not, and open a new terminal
