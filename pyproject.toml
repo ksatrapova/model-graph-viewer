@@ -1,0 +1,26 @@
+[project]
+name = "model-graph-viewer"
+version = "0.1.0"
+description = "Render neural network model graphs (OpenVINO IR) to SVG through configurable transformation passes"
+authors = [
+    { name = "Karla Satrapova", email = "110379421+ksatrapova@users.noreply.github.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "graphviz>=0.21",
+    "openvino>=2026.4.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.28,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
