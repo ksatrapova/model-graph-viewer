@@ -1,0 +1,47 @@
+# --- Secrets: never in git ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+local.settings.json
+appsettings.*.local.json
+secrets.*
+
+# --- Data: exports never in git ---
+data/
+**/data/raw/
+*.csv
+*.parquet
+*.xlsx
+*.xls
+# Allow small hand-made fixtures explicitly, e.g.:
+# !tests/fixtures/*.csv
+
+# --- Models: produced by scripts, never in git ---
+models/
+*.bin
+*.onnx
+*.gv
+
+# --- Claude Code local state ---
+.claude/settings.local.json
+.claude/audit/
+.claude/worktrees/
+
+# --- Python ---
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

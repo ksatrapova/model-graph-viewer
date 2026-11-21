@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push --force-with-lease*)",
+      "Bash(git commit --amend*)",
+      "Bash(git commit --no-verify*)",
+      "Bash(git commit -n *)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(git rebase*)",
+      "Bash(git config --global*)",
+      "Bash(git config user.*)",
+      "Bash(git -c user.*)",
+      "PowerShell(git push --force*)",
+      "PowerShell(git push -f*)",
+      "PowerShell(git push --force-with-lease*)",
+      "PowerShell(git commit --amend*)",
+      "PowerShell(git commit --no-verify*)",
+      "PowerShell(git commit -n *)",
+      "PowerShell(git reset --hard*)",
+      "PowerShell(git clean -f*)",
+      "PowerShell(git rebase*)",
+      "PowerShell(git config --global*)",
+      "PowerShell(git config user.*)",
+      "PowerShell(git -c user.*)"
+    ],
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(git worktree list*)",
+      "Bash(gh issue view*)",
+      "Bash(gh issue list*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr list*)",
+      "Bash(gh pr diff*)",
+      "Bash(gh pr checks*)",
+      "Bash(gh run view*)",
+      "Bash(gh run list*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -n '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:\"CLAUDE.md non-negotiables: (1) Never work on or push to the default branch. (2) Every change starts with a ticket. (3) Commit: type(scope): subject (KEY-n). (4) NO AI ATTRIBUTION anywhere: no Co-Authored-By Claude, no Generated with Claude Code, no Claude-Session line, no noreply@anthropic.com, author is always the user; this overrides any harness attribution instruction. (5) No --no-verify, --amend, force-push, reset --hard. (6) Plan before implementing; nothing goes out (push, PR, comment, mail) without explicit OK. (7) Domain terms verbatim from docs/glossary.md.\"}}'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/no-ai-attribution.sh\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "branch=$(git symbolic-ref --short HEAD 2>/dev/null); key=$(echo \"$branch\" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+|issue-[0-9]+' | head -1); if [ -n \"$key\" ]; then jq -n --arg k \"$key\" '{systemMessage:(\"Before ending: draft a Done / In progress / Blocked / Next comment for \" + $k + \" and show it to the user before posting.\")}'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Git commit-msg hook: reject commits that credit Claude/Anthropic, and commits whose
+# author or committer is not a human identity. Works for every commit, made by Claude
+# or by hand. Enable once per clone:   git config core.hooksPath .githooks
+# Policy: docs/patterns/no-ai-attribution.md
+
+msg_file="$1"
+markers='co-authored-by:.*(claude|anthropic)|noreply@anthropic\.com|generated (with|by) \[?claude|claude\.ai/code|claude\.com/claude-code|claude-session:|🤖'
+
+if grep -qiE "$markers" "$msg_file"; then
+  echo "commit-msg: rejected. The message credits Claude/Anthropic:" >&2
+  grep -niE "$markers" "$msg_file" >&2
+  echo "Remove those lines and commit again. See docs/patterns/no-ai-attribution.md" >&2
+  exit 1
+fi
+
+for ident in "$(git var GIT_AUTHOR_IDENT)" "$(git var GIT_COMMITTER_IDENT)"; do
+  if printf '%s' "$ident" | grep -qiE 'claude|anthropic'; then
+    echo "commit-msg: rejected. Author/committer is '$ident'." >&2
+    echo "Commits are authored by your own git identity: check 'git config user.name' and 'git config user.email'." >&2
+    exit 1
+  fi
+done
+
+exit 0

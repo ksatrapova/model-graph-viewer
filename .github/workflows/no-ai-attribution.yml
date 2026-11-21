@@ -1,0 +1,58 @@
+name: no-ai-attribution
+
+# Fails a PR whose commits or title/body credit Claude/Anthropic, or whose commits are
+# authored/committed by a Claude/Anthropic identity. Make this a REQUIRED check in branch
+# protection. Policy: docs/patterns/no-ai-attribution.md
+#
+# No third-party actions and no checkout: everything comes from the GitHub API, so there
+# is nothing to pin and no PR code is executed.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject AI attribution in commits and PR text
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          # Passed via env, never interpolated into the script: PR text is untrusted input.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          markers='co-authored-by:.*(claude|anthropic)|noreply@anthropic\.com|generated (with|by) \[?claude|claude\.ai/code|claude\.com/claude-code|claude-session:'
+          fail=0
+
+          if printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" | grep -iEq "$markers"; then
+            echo "::error::PR title or body credits Claude/Anthropic. Edit the PR text."
+            fail=1
+          fi
+
+          gh api --paginate "repos/$REPO/pulls/$PR/commits" \
+            --jq '.[] | [.sha[0:7], .commit.author.name, .commit.author.email, .commit.committer.email, (.commit.message | gsub("[\r\n\t]"; " "))] | @tsv' \
+            > commits.tsv
+
+          while IFS=$'\t' read -r sha aname aemail cemail msg; do
+            if printf '%s' "$msg" | grep -iEq "$markers"; then
+              echo "::error::commit $sha: message credits Claude/Anthropic."
+              fail=1
+            fi
+            if printf '%s %s %s' "$aname" "$aemail" "$cemail" | grep -iEq 'claude|anthropic'; then
+              echo "::error::commit $sha: author/committer is a Claude/Anthropic identity ($aname <$aemail>, committer <$cemail>)."
+              fail=1
+            fi
+          done < commits.tsv
+
+          if [ "$fail" -ne 0 ]; then
+            echo "See docs/patterns/no-ai-attribution.md, section 'If it already happened'."
+          fi
+          exit "$fail"

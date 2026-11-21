@@ -1,0 +1,17 @@
+version: 2
+# Keep the ecosystems the project uses, delete the rest.
+# Dependabot commits are authored by dependabot[bot]; that's expected and not AI attribution.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(ci)"
+
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
