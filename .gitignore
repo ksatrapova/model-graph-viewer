@@ -24,6 +24,8 @@ models/
 *.bin
 *.onnx
 *.gv
+# output of reference/starter_code.py (written to the current directory)
+simple_graph.svg
 
 # --- Claude Code local state ---
 .claude/settings.local.json
